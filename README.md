@@ -2,6 +2,10 @@
 
 Example SetFit classification of job-vacancy postings using a small **synthetic** dataset.
 
+<p align="center">
+  <img src="./docs/demo.svg">
+</p>
+
 ## Project goal
 
 Demonstrate how to fine-tune a Sentence-Transformers encoder with the [SetFit](https://github.com/huggingface/setfit) framework to distinguish “interesting” tech jobs (senior, remote, well-paid) from everything else.
