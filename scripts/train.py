@@ -10,6 +10,7 @@ The model is saved to *models/job_interest_classifier* by default.
 
 from __future__ import annotations
 
+import logging
 import warnings
 from pathlib import Path
 from typing import Dict
@@ -19,6 +20,8 @@ import typer
 from datasets import Dataset
 from setfit import SetFitModel, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score
+
+logging.getLogger("setfit").setLevel(logging.ERROR)
 
 cli = typer.Typer(rich_markup_mode="rich")
 
