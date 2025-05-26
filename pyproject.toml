@@ -6,10 +6,10 @@ authors = [{ name = "Viacheslav Shvets", email = "slava@shvec.com" }]
 requires-python = ">=3.13"
 dependencies = [
     "datasets>=3.6.0",
+    "fire>=0.7.0",
     "pandas>=2.2.3",
     "scikit-learn>=1.6.1",
     "setfit>=1.1.2",
-    "typer>=0.15.4",
 ]
 
 [dependency-groups]
