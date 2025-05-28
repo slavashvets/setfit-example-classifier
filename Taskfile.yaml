@@ -1,0 +1,58 @@
+version: "3"
+
+tasks:
+  check-uv:
+    cmds:
+      - |
+        if ! command -v uv &> /dev/null; then
+          echo "UV is not installed. Please install UV:"
+          echo "https://docs.astral.sh/uv/getting-started/installation/"
+          exit 1
+        fi
+    silent: true
+
+  check-asciinema:
+    cmds:
+      - |
+        if ! command -v asciinema &> /dev/null; then
+          echo "Asciinema is not installed. Please install Asciinema:"
+          echo "https://docs.asciinema.org/getting-started/"
+          exit 1
+        fi
+    silent: true
+
+  check-bunx:
+    cmds:
+      - |
+        if ! command -v bunx &> /dev/null; then
+          echo "Bun is not installed. Please install Bun:"
+          echo "https://bun.sh/docs/installation"
+          exit 1
+        fi
+    silent: true
+
+  train:
+    deps:
+      - check-uv
+    desc: Train the model using data/train.csv and data/eval.csv
+    cmds:
+      - uv run main.py train
+
+  test:
+    deps:
+      - check-uv
+    desc: Test the model performance using data/test.csv
+    cmds:
+      - uv run main.py test
+
+  rec:
+    deps:
+      - check-asciinema
+      - check-bunx
+    desc: Record a terminal session using Asciinema and convert to SVG
+    cmds:
+      - asciinema rec -i 2 --cols 120 --rows 34 docs/demo.cast
+      - bunx svg-term-cli --in docs/demo.cast --out docs/demo.svg --window --padding 2
+      - rm docs/demo.cast
+    generates:
+      - docs/demo.svg

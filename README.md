@@ -12,14 +12,17 @@ Demonstrate how to fine-tune a Sentence-Transformers encoder with the [SetFit](h
 
 ## Quick start
 
-`uv` handles the virtual environment and dependencies automatically:
+[Taskfile](https://taskfile.dev/installation/) handles task management, and [uv](https://docs.astral.sh/uv/getting-started/installation/) manages the virtual environment and dependencies automatically (including python executable).
 
 ```bash
 # Train the model and save the best checkpoint under models/
-uv run main.py train
+task train
 
 # Evaluate on the held-out test set
-uv run main.py test
+task test
+
+# List all available tasks
+task --list
 ```
 
 ## Dataset

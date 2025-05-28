@@ -6,6 +6,8 @@ import fire
 import numpy as np
 import pandas as pd
 from datasets import Dataset
+from rich.console import Console
+from rich.table import Table
 from setfit import SetFitModel, Trainer, TrainingArguments
 from sklearn.metrics import accuracy_score, f1_score
 
@@ -29,6 +31,8 @@ TEST_DF: pd.DataFrame = pd.read_csv("data/test.csv")
 BASE_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 MODEL_DIR: Path = Path("models/job_interest_classifier")
 
+console = Console()
+
 
 def compute_metrics(y_pred, y_true) -> dict[str, float]:
     """Return accuracy and F1 for SetFit trainer."""
@@ -38,11 +42,18 @@ def compute_metrics(y_pred, y_true) -> dict[str, float]:
     }
 
 
-def classify_texts(texts: pd.Series, model_dir: Path) -> list[int]:
+def classify_texts(
+    texts: pd.Series, model_dir: Path, probabilities: bool = False
+) -> list:
     """Predict binary labels for a sequence of vacancy texts."""
     model = SetFitModel.from_pretrained(model_dir)
-    raw = model.predict(texts.to_list())
-    return np.atleast_1d(raw).astype(int).tolist()
+
+    if probabilities:
+        probas = model.predict_proba(texts.to_list())
+        return [proba[1] * 100 for proba in probas]
+    else:
+        raw = model.predict(texts.to_list())
+        return np.atleast_1d(raw).astype(int).tolist()
 
 
 def train() -> dict[str, float]:
@@ -71,15 +82,32 @@ def train() -> dict[str, float]:
     return trainer.evaluate()
 
 
-def test() -> dict[str, float]:
+def test() -> None:
     """Compute and print accuracy and F1 (if labels present) for test data."""
     df = TEST_DF
-    preds = classify_texts(df["text"], MODEL_DIR)
+    preds = classify_texts(df["text"], MODEL_DIR, probabilities=False)
+    probas = classify_texts(df["text"], MODEL_DIR, probabilities=True)
 
-    for (idx, text), pred in zip(df["text"].items(), preds):
-        print(f"{idx}: {text} -> {pred}")
+    results_table = Table(title="Classification Results")
+    results_table.add_column("Index", justify="right", style="cyan")
+    results_table.add_column("Text", style="magenta")
+    results_table.add_column("Probability (%)", justify="center", style="yellow")
+    results_table.add_column("Prediction", justify="center", style="yellow")
 
-    return compute_metrics(preds, df["label"])
+    for (idx, text), proba, pred in zip(df["text"].items(), probas, preds):
+        results_table.add_row(str(idx), text, f"{proba:.2f}%", str(pred))
+
+    console.print(results_table)
+
+    metrics = compute_metrics(preds, df["label"])
+    metrics_table = Table(title="Metrics")
+    metrics_table.add_column("Metric", style="cyan")
+    metrics_table.add_column("Value", justify="center", style="yellow")
+
+    for metric_name, metric_value in metrics.items():
+        metrics_table.add_row(metric_name, f"{metric_value:.4f}")
+
+    console.print(metrics_table)
 
 
 if __name__ == "__main__":
